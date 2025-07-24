@@ -34,7 +34,7 @@ export default function Dashboard({ params }: DashboardProps) {
 
   const updateMoodMutation = useMutation({
     mutationFn: async (newMood: string) => {
-      const response = await apiRequest("PATCH", `/api/students/profile/${dashboardData?.profile?.id}`, {
+      const response = await apiRequest("PATCH", `/api/students/profile/${(dashboardData as any)?.profile?.id}`, {
         currentMood: newMood
       });
       return response.json();
@@ -77,7 +77,7 @@ export default function Dashboard({ params }: DashboardProps) {
     );
   }
 
-  const { profile, subjects } = dashboardData;
+  const { profile, subjects } = (dashboardData as any) || {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
@@ -138,6 +138,7 @@ export default function Dashboard({ params }: DashboardProps) {
                 <SubjectCard 
                   key={subject.id} 
                   subject={subject}
+                  studentId={studentId}
                   onSpeak={() => speak(`${subject.magicalName}: ${subject.description}`)}
                 />
               ))}

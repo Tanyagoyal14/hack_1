@@ -253,7 +253,7 @@ export class SQLiteStorage implements IStorage {
       JSON.stringify(insertProfile.accessibilityNeeds || {}),
       insertProfile.level || 1,
       insertProfile.totalXP || 0,
-      insertProfile.availableSpins || 3,
+      insertProfile.availableSpins || 5,
       insertProfile.streak || 0,
       JSON.stringify(insertProfile.badges || []),
       now

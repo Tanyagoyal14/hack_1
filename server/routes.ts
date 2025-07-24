@@ -232,6 +232,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Game progress endpoint
+  app.post("/api/students/:studentId/progress", async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      const { gameId, score, xpEarned } = req.body;
+      
+      // Update student XP for completing game
+      const profile = await (storage as any).getStudentProfileById?.(studentId);
+      if (profile) {
+        await storage.updateStudentXP(profile.id, xpEarned || 0);
+        
+        // Award extra spin for good performance
+        if (score >= 4) {
+          await storage.updateAvailableSpins(profile.id, (profile.availableSpins || 0) + 1);
+        }
+      }
+      
+      res.json({ success: true, xpEarned, bonusSpin: score >= 4 });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

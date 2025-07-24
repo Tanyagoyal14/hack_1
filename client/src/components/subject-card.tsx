@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { SubjectGames } from "./subject-games";
 
 interface Subject {
   id: number;
@@ -16,10 +18,12 @@ interface Subject {
 
 interface SubjectCardProps {
   subject: Subject;
+  studentId?: number;
   onSpeak?: () => void;
 }
 
-export function SubjectCard({ subject, onSpeak }: SubjectCardProps) {
+export function SubjectCard({ subject, studentId, onSpeak }: SubjectCardProps) {
+  const [showGames, setShowGames] = useState(false);
   const getColorClasses = (color: string) => {
     switch (color) {
       case 'purple':
@@ -91,11 +95,11 @@ export function SubjectCard({ subject, onSpeak }: SubjectCardProps) {
           <Button 
             className={`flex-1 ${colorClasses.button} transition-colors font-semibold`}
             onClick={() => {
-              // Navigate to subject learning interface
+              setShowGames(!showGames);
               console.log(`Starting ${subject.magicalName}`);
             }}
           >
-            Continue Learning
+            {showGames ? 'Hide Games' : 'Continue Learning'}
           </Button>
           
           {onSpeak && (
@@ -110,6 +114,19 @@ export function SubjectCard({ subject, onSpeak }: SubjectCardProps) {
             </Button>
           )}
         </div>
+        
+        {showGames && studentId && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <SubjectGames 
+              subjectName={subject.name}
+              studentId={studentId}
+              onGameComplete={() => {
+                // Games completed, could refresh progress
+                console.log(`Game completed for ${subject.magicalName}`);
+              }}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
