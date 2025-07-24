@@ -241,11 +241,7 @@ function GamePlayer({ game, onComplete }: GamePlayerProps) {
                   <Button 
                     key={index}
                     onClick={() => handleAnswer(index)}
-                    className={`p-4 text-base font-semibold transition-all duration-200 ${
-                      index === current.correct 
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-400' 
-                        : 'bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400'
-                    }`}
+                    className="p-4 text-base font-semibold transition-all duration-200 bg-purple-500 hover:bg-purple-600 text-white border-2 border-purple-400"
                   >
                     {answer}
                   </Button>
