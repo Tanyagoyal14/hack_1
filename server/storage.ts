@@ -28,6 +28,7 @@ export interface IStorage {
 
   // Student profiles
   getStudentProfile(userId: number): Promise<StudentProfile | undefined>;
+  getStudentProfileById?(id: number): Promise<StudentProfile | undefined>;
   createStudentProfile(profile: InsertStudentProfile): Promise<StudentProfile>;
   updateStudentProfile(id: number, updates: Partial<StudentProfile>): Promise<StudentProfile | undefined>;
 
@@ -271,4 +272,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { SQLiteStorage } from "./sqlite-storage";
+
+export const storage = new SQLiteStorage();

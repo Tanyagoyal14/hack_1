@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 The application uses a modern full-stack TypeScript architecture with:
 - **Frontend**: React + Vite with TypeScript
 - **Backend**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
+- **Database**: SQLite with better-sqlite3 driver
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: TanStack Query for server state
 - **Routing**: Wouter for client-side routing
@@ -40,13 +40,15 @@ The application uses a modern full-stack TypeScript architecture with:
 - **Type-safe** request/response handling with Zod validation
 - **Session management** with PostgreSQL session store
 
-### 3. Database Schema Design
+### 3. Database Schema Design (SQLite)
 - **Users table**: Core user authentication and role management
 - **Student profiles**: Personalization data (mood, learning style, accessibility needs)
 - **Subjects**: Magical theme mapping (Math → Potions, Reading → Spells, etc.)
 - **Progress tracking**: Per-subject completion and performance metrics
 - **Survey responses**: Mood and preference capture
 - **Rewards system**: Gamification with badges and achievements
+
+**Database Technology**: SQLite with better-sqlite3 driver for local file-based storage
 
 ### 4. Personalization Engine
 - **Mood analysis**: Real-time emotional state tracking
@@ -80,9 +82,9 @@ Mood Updates → Content Adjustment → Accessibility Adaptation → Progress Sy
 - **class-variance-authority** for component variants
 
 ### Database and State
-- **@neondatabase/serverless** for PostgreSQL connection
+- **better-sqlite3** for SQLite database operations
+- **sqlite3** for database compatibility
 - **Drizzle Zod** for schema validation
-- **connect-pg-simple** for session storage
 
 ### Accessibility and Enhancement
 - **Web Speech API** for text-to-speech

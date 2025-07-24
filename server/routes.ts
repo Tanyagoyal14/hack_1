@@ -201,9 +201,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const studentId = parseInt(req.params.studentId);
       
-      // Get student profile
-      const profile = Array.from((storage as any).studentProfiles.values())
-        .find((p: any) => p.id === studentId);
+      // Get student profile by ID
+      const profile = await (storage as any).getStudentProfileById?.(studentId);
       
       if (!profile) {
         return res.status(404).json({ message: "Student not found" });
