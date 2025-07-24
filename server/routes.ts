@@ -1,43 +1,34 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { 
-  insertUserSchema, 
   insertStudentProfileSchema, 
   insertSurveyResponseSchema,
   insertStudentRewardSchema 
 } from "@shared/schema";
-import { analyzeMoodAndLearningStyle } from "../client/src/lib/mood-analyzer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
   
-  // User routes
-  app.post("/api/users", async (req, res) => {
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       res.json(user);
-    } catch (error: any) {
-      res.status(400).json({ message: error.message });
-    }
-  });
-
-  app.get("/api/users/:id", async (req, res) => {
-    try {
-      const user = await storage.getUser(parseInt(req.params.id));
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
   // Student profile routes
-  app.get("/api/students/profile/:userId", async (req, res) => {
+  app.get("/api/students/profile", isAuthenticated, async (req: any, res) => {
     try {
-      const profile = await storage.getStudentProfile(parseInt(req.params.userId));
+      const userId = req.user.claims.sub;
+      const profile = await storage.getStudentProfile(userId);
       if (!profile) {
         return res.status(404).json({ message: "Student profile not found" });
       }
@@ -47,9 +38,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/students/profile", async (req, res) => {
+  app.post("/api/students/profile", isAuthenticated, async (req: any, res) => {
     try {
-      const profileData = insertStudentProfileSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      const profileData = insertStudentProfileSchema.parse({
+        ...req.body,
+        userId
+      });
       const profile = await storage.createStudentProfile(profileData);
       res.json(profile);
     } catch (error: any) {

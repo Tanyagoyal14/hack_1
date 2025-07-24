@@ -7,7 +7,7 @@ import {
   rewards,
   studentRewards,
   type User, 
-  type InsertUser,
+  type UpsertUser,
   type StudentProfile,
   type InsertStudentProfile,
   type Subject,
@@ -21,13 +21,12 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  // User management
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // User management (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Student profiles
-  getStudentProfile(userId: number): Promise<StudentProfile | undefined>;
+  getStudentProfile(userId: string): Promise<StudentProfile | undefined>;
   getStudentProfileById?(id: number): Promise<StudentProfile | undefined>;
   createStudentProfile(profile: InsertStudentProfile): Promise<StudentProfile>;
   updateStudentProfile(id: number, updates: Partial<StudentProfile>): Promise<StudentProfile | undefined>;
@@ -272,6 +271,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { SQLiteStorage } from "./sqlite-storage";
+import { DatabaseStorage } from "./database-storage";
 
-export const storage = new SQLiteStorage();
+export const storage = new DatabaseStorage();
