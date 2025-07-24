@@ -19,10 +19,11 @@ interface Subject {
 interface SubjectCardProps {
   subject: Subject;
   studentId?: number;
+  theme?: any;
   onSpeak?: () => void;
 }
 
-export function SubjectCard({ subject, studentId, onSpeak }: SubjectCardProps) {
+export function SubjectCard({ subject, studentId, theme, onSpeak }: SubjectCardProps) {
   const [showGames, setShowGames] = useState(false);
   const getColorClasses = (color: string) => {
     switch (color) {
@@ -66,9 +67,13 @@ export function SubjectCard({ subject, studentId, onSpeak }: SubjectCardProps) {
 
   const colorClasses = getColorClasses(subject.color);
 
+  const cardBg = theme ? theme.colors.cardBg : 'bg-white';
+  const borderColor = theme ? theme.colors.border : colorClasses.border;
+  const gradient = theme ? theme.colors.primary : colorClasses.gradient;
+
   return (
-    <Card className={`bg-white rounded-2xl shadow-lg border-2 ${colorClasses.border} hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
-      <div className={`bg-gradient-to-r ${colorClasses.gradient} p-4`}>
+    <Card className={`${cardBg} rounded-2xl shadow-lg border-2 ${borderColor} hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
+      <div className={`bg-gradient-to-r ${gradient} p-4`}>
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center space-x-3">
             <i className={`${subject.icon} text-2xl group-hover:animate-bounce`}></i>

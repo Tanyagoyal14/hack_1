@@ -8,6 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { SubjectCard } from "@/components/subject-card";
 import { RewardWheel } from "@/components/reward-wheel";
 import { MoodIndicator } from "@/components/mood-indicator";
+import { ThemeSwitcher, useTheme } from "@/components/theme-switcher";
 import { useTTS } from "@/hooks/use-tts";
 
 interface DashboardProps {
@@ -19,6 +20,7 @@ export default function Dashboard({ params }: DashboardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { speak } = useTTS();
+  const { currentTheme, theme, changeTheme } = useTheme();
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['/api/students', studentId, 'dashboard'],
@@ -50,10 +52,10 @@ export default function Dashboard({ params }: DashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 flex items-center justify-center">
+      <div className={`min-h-screen bg-gradient-to-br ${theme.colors.background} flex items-center justify-center`}>
         <div className="text-center">
-          <i className="fas fa-magic text-4xl text-purple-600 animate-spin mb-4"></i>
-          <p className="text-lg text-gray-600">Preparing your magical dashboard...</p>
+          <i className={`fas fa-magic text-4xl ${theme.colors.text} animate-spin mb-4`}></i>
+          <p className={`text-lg ${theme.colors.text}`}>Preparing your magical dashboard...</p>
         </div>
       </div>
     );
@@ -61,12 +63,12 @@ export default function Dashboard({ params }: DashboardProps) {
 
   if (!dashboardData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 flex items-center justify-center">
-        <Card className="p-6">
+      <div className={`min-h-screen bg-gradient-to-br ${theme.colors.background} flex items-center justify-center`}>
+        <Card className={`p-6 ${theme.colors.cardBg} ${theme.colors.border}`}>
           <CardContent>
-            <p className="text-lg text-gray-600 mb-4">Dashboard not found. Would you like to take the survey?</p>
+            <p className={`text-lg ${theme.colors.text} mb-4`}>Dashboard not found. Would you like to take the survey?</p>
             <Link href="/survey">
-              <Button className="bg-purple-600 hover:bg-purple-700">
+              <Button className={theme.colors.button}>
                 <i className="fas fa-magic mr-2"></i>
                 Start Survey
               </Button>
@@ -79,26 +81,43 @@ export default function Dashboard({ params }: DashboardProps) {
 
   const { profile, subjects } = (dashboardData as any) || {};
 
+  // Map subjects to current theme
+  const themedSubjects = subjects?.map((subject: any) => {
+    const themeSubject = theme.subjects[subject.name as keyof typeof theme.subjects];
+    return {
+      ...subject,
+      magicalName: themeSubject?.name || subject.magicalName,
+      icon: themeSubject?.icon || subject.icon,
+      color: themeSubject?.color || subject.color
+    };
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
+    <div className={`min-h-screen bg-gradient-to-br ${theme.colors.background}`}>
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-40">
+      <nav className={`${theme.colors.cardBg} backdrop-blur-sm shadow-lg border-b-4 ${theme.colors.border} sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+              <div className={`w-10 h-10 bg-gradient-to-r ${theme.colors.primary} rounded-full flex items-center justify-center`}>
                 <i className="fas fa-magic text-white text-lg"></i>
               </div>
-              <h1 className="font-display text-2xl text-purple-600">MoodWise Learning Hub</h1>
+              <h1 className={`font-display text-2xl ${theme.colors.text}`}>
+                {theme.name} Learning Hub
+              </h1>
             </div>
             <div className="flex items-center space-x-4">
+              <ThemeSwitcher 
+                currentTheme={currentTheme}
+                onThemeChange={changeTheme}
+              />
               <MoodIndicator 
                 mood={profile.currentMood} 
                 onMoodChange={(mood) => updateMoodMutation.mutate(mood)}
               />
-              <div className="flex items-center space-x-2 bg-yellow-300/20 px-3 py-2 rounded-full">
+              <div className={`flex items-center space-x-2 ${theme.colors.cardBg} px-3 py-2 rounded-full ${theme.colors.border}`}>
                 <i className="fas fa-star text-yellow-600"></i>
-                <span className="text-sm font-semibold">{profile.totalXP || 0} XP</span>
+                <span className={`text-sm font-semibold ${theme.colors.text}`}>{profile.totalXP || 0} XP</span>
               </div>
             </div>
           </div>
@@ -134,11 +153,12 @@ export default function Dashboard({ params }: DashboardProps) {
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {subjects?.map((subject: any) => (
+              {themedSubjects?.map((subject: any) => (
                 <SubjectCard 
                   key={subject.id} 
                   subject={subject}
                   studentId={studentId}
+                  theme={theme}
                   onSpeak={() => speak(`${subject.magicalName}: ${subject.description}`)}
                 />
               ))}
