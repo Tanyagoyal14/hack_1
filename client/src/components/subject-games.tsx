@@ -133,18 +133,68 @@ interface GamePlayerProps {
 
 function GamePlayer({ game, onComplete }: GamePlayerProps) {
   const [currentScore, setCurrentScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
   const [gameStep, setGameStep] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [lastAnswer, setLastAnswer] = useState<'correct' | 'wrong' | null>(null);
 
-  // Simple game mechanics based on game type
-  const handleGameAction = () => {
-    const points = Math.floor(Math.random() * 10) + 5; // 5-15 points per action
+  // Different questions for each game type
+  const questions = {
+    math: [
+      { question: "What is 7 + 5?", answers: ["11", "12", "13", "10"], correct: 1 },
+      { question: "What is 8 - 3?", answers: ["4", "5", "6", "7"], correct: 1 },
+      { question: "What is 4 × 2?", answers: ["6", "8", "10", "12"], correct: 1 },
+      { question: "What is 9 + 2?", answers: ["10", "11", "12", "13"], correct: 1 },
+      { question: "What is 15 - 7?", answers: ["7", "8", "9", "10"], correct: 1 },
+      { question: "What is 3 × 3?", answers: ["6", "9", "12", "15"], correct: 1 }
+    ],
+    reading: [
+      { question: "Which word rhymes with 'cat'?", answers: ["Hat", "Dog", "Bird", "Fish"], correct: 0 },
+      { question: "Which word rhymes with 'sun'?", answers: ["Moon", "Fun", "Star", "Sky"], correct: 1 },
+      { question: "What starts with 'B'?", answers: ["Apple", "Ball", "Cat", "Dog"], correct: 1 },
+      { question: "Which is a color?", answers: ["Table", "Blue", "Chair", "Book"], correct: 1 },
+      { question: "Which word rhymes with 'tree'?", answers: ["Bee", "Dog", "Car", "House"], correct: 0 },
+      { question: "What starts with 'S'?", answers: ["Moon", "Star", "Ball", "Cat"], correct: 1 }
+    ],
+    science: [
+      { question: "What do plants need to grow?", answers: ["Only water", "Sun & Water", "Only sun", "Nothing"], correct: 1 },
+      { question: "What do fish use to breathe?", answers: ["Lungs", "Gills", "Nose", "Mouth"], correct: 1 },
+      { question: "Which planet is closest to the sun?", answers: ["Earth", "Mercury", "Mars", "Venus"], correct: 1 },
+      { question: "What makes plants green?", answers: ["Water", "Chlorophyll", "Soil", "Air"], correct: 1 },
+      { question: "How many legs does a spider have?", answers: ["6", "8", "10", "12"], correct: 1 },
+      { question: "What do bees make?", answers: ["Milk", "Honey", "Butter", "Cheese"], correct: 1 }
+    ],
+    social_studies: [
+      { question: "Which continent has penguins?", answers: ["Africa", "Asia", "Antarctica", "Europe"], correct: 2 },
+      { question: "What is the capital of France?", answers: ["London", "Paris", "Rome", "Berlin"], correct: 1 },
+      { question: "Which ocean is the largest?", answers: ["Atlantic", "Pacific", "Indian", "Arctic"], correct: 1 },
+      { question: "What do we call a group of people living together?", answers: ["Animals", "Community", "Plants", "Weather"], correct: 1 },
+      { question: "What is used to buy things?", answers: ["Rocks", "Money", "Leaves", "Water"], correct: 1 },
+      { question: "Which season comes after winter?", answers: ["Summer", "Spring", "Fall", "Winter"], correct: 1 }
+    ]
+  };
+
+  const currentQuestions = questions[game.type] || questions.math;
+  const current = currentQuestions[currentQuestion];
+
+  const handleAnswer = (answerIndex: number) => {
+    const isCorrect = answerIndex === current.correct;
+    const points = isCorrect ? 15 : 5; // More points for correct answers
+    
     setCurrentScore(prev => prev + points);
-    setGameStep(prev => prev + 1);
-
-    if (gameStep >= 5) { // Complete after 6 actions
-      setTimeout(() => onComplete(currentScore + points), 500);
-    }
+    setLastAnswer(isCorrect ? 'correct' : 'wrong');
+    setShowResult(true);
+    
+    setTimeout(() => {
+      setShowResult(false);
+      setLastAnswer(null);
+      setGameStep(prev => prev + 1);
+      setCurrentQuestion(prev => (prev + 1) % currentQuestions.length);
+      
+      if (gameStep >= 4) { // Complete after 5 questions
+        setTimeout(() => onComplete(currentScore + points), 300);
+      }
+    }, 1500); // Show result for 1.5 seconds
   };
 
   return (
@@ -164,70 +214,56 @@ function GamePlayer({ game, onComplete }: GamePlayerProps) {
             <div className="text-xs text-gray-600">Score</div>
           </div>
           <div className="bg-white rounded-lg p-3 min-w-[80px] text-center">
-            <div className="text-lg font-bold text-blue-600">{6 - gameStep}</div>
-            <div className="text-xs text-gray-600">Actions Left</div>
+            <div className="text-lg font-bold text-blue-600">{5 - gameStep}</div>
+            <div className="text-xs text-gray-600">Questions Left</div>
           </div>
         </div>
 
         <div className="space-y-4">
-          {game.type === 'math' && (
+          {showResult ? (
             <div className="text-center">
-              <p className="text-lg mb-4">What is 7 + 5?</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleGameAction} variant="outline">11</Button>
-                <Button onClick={handleGameAction} className="bg-green-600 hover:bg-green-700">12</Button>
-                <Button onClick={handleGameAction} variant="outline">13</Button>
-                <Button onClick={handleGameAction} variant="outline">10</Button>
+              <div className={`text-2xl font-bold mb-4 ${lastAnswer === 'correct' ? 'text-green-600' : 'text-red-600'}`}>
+                {lastAnswer === 'correct' ? '✅ Correct! +15 points' : '❌ Try again! +5 points'}
+              </div>
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
+                lastAnswer === 'correct' ? 'bg-green-100' : 'bg-red-100'
+              }`}>
+                <i className={`text-3xl ${
+                  lastAnswer === 'correct' ? 'fas fa-check text-green-600' : 'fas fa-times text-red-600'
+                }`}></i>
               </div>
             </div>
-          )}
-
-          {game.type === 'reading' && (
+          ) : (
             <div className="text-center">
-              <p className="text-lg mb-4">Which word rhymes with "cat"?</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleGameAction} className="bg-green-600 hover:bg-green-700">Hat</Button>
-                <Button onClick={handleGameAction} variant="outline">Dog</Button>
-                <Button onClick={handleGameAction} variant="outline">Bird</Button>
-                <Button onClick={handleGameAction} variant="outline">Fish</Button>
-              </div>
-            </div>
-          )}
-
-          {game.type === 'science' && (
-            <div className="text-center">
-              <p className="text-lg mb-4">What do plants need to grow?</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleGameAction} variant="outline">Only water</Button>
-                <Button onClick={handleGameAction} className="bg-green-600 hover:bg-green-700">Sun & Water</Button>
-                <Button onClick={handleGameAction} variant="outline">Only sun</Button>
-                <Button onClick={handleGameAction} variant="outline">Nothing</Button>
-              </div>
-            </div>
-          )}
-
-          {game.type === 'social_studies' && (
-            <div className="text-center">
-              <p className="text-lg mb-4">Which continent has penguins?</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleGameAction} variant="outline">Africa</Button>
-                <Button onClick={handleGameAction} variant="outline">Asia</Button>
-                <Button onClick={handleGameAction} className="bg-green-600 hover:bg-green-700">Antarctica</Button>
-                <Button onClick={handleGameAction} variant="outline">Europe</Button>
+              <p className="text-lg mb-4 font-semibold">{current.question}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {current.answers.map((answer, index) => (
+                  <Button 
+                    key={index}
+                    onClick={() => handleAnswer(index)}
+                    className={`p-4 text-base font-semibold transition-all duration-200 ${
+                      index === current.correct 
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-emerald-400' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400'
+                    }`}
+                  >
+                    {answer}
+                  </Button>
+                ))}
               </div>
             </div>
           )}
         </div>
 
         <div className="mt-6 bg-white rounded-lg p-3">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(gameStep / 6) * 100}%` }}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${(gameStep / 5) * 100}%` }}
             ></div>
           </div>
-          <p className="text-center text-sm text-gray-600 mt-2">
-            Progress: {gameStep}/6 completed
+          <p className="text-center text-sm font-semibold text-gray-700 mt-2">
+            Progress: {gameStep}/5 completed
           </p>
         </div>
       </CardContent>
