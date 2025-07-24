@@ -179,9 +179,9 @@ function GamePlayer({ game, onComplete }: GamePlayerProps) {
 
   const handleAnswer = (answerIndex: number) => {
     const isCorrect = answerIndex === current.correct;
-    const points = isCorrect ? 15 : 5; // More points for correct answers
+    const points = isCorrect ? 15 : -5; // Subtract points for wrong answers
     
-    setCurrentScore(prev => prev + points);
+    setCurrentScore(prev => Math.max(0, prev + points)); // Don't go below 0
     setLastAnswer(isCorrect ? 'correct' : 'wrong');
     setShowResult(true);
     
@@ -192,7 +192,7 @@ function GamePlayer({ game, onComplete }: GamePlayerProps) {
       setCurrentQuestion(prev => (prev + 1) % currentQuestions.length);
       
       if (gameStep >= 4) { // Complete after 5 questions
-        setTimeout(() => onComplete(currentScore + points), 300);
+        setTimeout(() => onComplete(Math.max(0, currentScore + points)), 300);
       }
     }, 1500); // Show result for 1.5 seconds
   };
@@ -223,7 +223,7 @@ function GamePlayer({ game, onComplete }: GamePlayerProps) {
           {showResult ? (
             <div className="text-center">
               <div className={`text-2xl font-bold mb-4 ${lastAnswer === 'correct' ? 'text-green-600' : 'text-red-600'}`}>
-                {lastAnswer === 'correct' ? '✅ Correct! +15 points' : '❌ Try again! +5 points'}
+                {lastAnswer === 'correct' ? '✅ Correct! +15 points' : '❌ Wrong answer! -5 points'}
               </div>
               <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
                 lastAnswer === 'correct' ? 'bg-green-100' : 'bg-red-100'
