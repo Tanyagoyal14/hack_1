@@ -20,7 +20,7 @@ import {
   type InsertStudentReward
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -92,23 +92,31 @@ export class DatabaseStorage implements IStorage {
     const [progress] = await db
       .select()
       .from(studentProgress)
-      .where(eq(studentProgress.studentId, studentId) && eq(studentProgress.subjectId, subjectId));
+      .where(eq(studentProgress.studentId, studentId))
+      .where(eq(studentProgress.subjectId, subjectId));
     return progress;
   }
 
   async upsertStudentProgress(insertProgress: InsertStudentProgress): Promise<StudentProgress> {
-    const [progress] = await db
-      .insert(studentProgress)
-      .values(insertProgress)
-      .onConflictDoUpdate({
-        target: [studentProgress.studentId, studentProgress.subjectId],
-        set: {
+    const existing = await this.getStudentProgressBySubject(insertProgress.studentId, insertProgress.subjectId);
+    
+    if (existing) {
+      const [progress] = await db
+        .update(studentProgress)
+        .set({
           ...insertProgress,
           lastAccessed: new Date(),
-        },
-      })
-      .returning();
-    return progress;
+        })
+        .where(eq(studentProgress.id, existing.id))
+        .returning();
+      return progress;
+    } else {
+      const [progress] = await db
+        .insert(studentProgress)
+        .values(insertProgress)
+        .returning();
+      return progress;
+    }
   }
 
   // Survey responses
@@ -125,7 +133,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(surveyResponses)
       .where(eq(surveyResponses.studentId, studentId))
-      .orderBy(surveyResponses.createdAt)
+      .orderBy(desc(surveyResponses.createdAt))
       .limit(1);
     return response;
   }

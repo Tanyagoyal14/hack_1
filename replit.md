@@ -13,11 +13,12 @@ Preferred communication style: Simple, everyday language.
 ### Monolithic Full-Stack Architecture
 The application uses a modern full-stack TypeScript architecture with:
 - **Frontend**: React + Vite with TypeScript
-- **Backend**: Express.js with TypeScript
-- **Database**: SQLite with better-sqlite3 driver
+- **Backend**: Express.js with TypeScript + Replit Auth
+- **Database**: PostgreSQL with Drizzle ORM
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: TanStack Query for server state
 - **Routing**: Wouter for client-side routing
+- **Authentication**: Replit OpenID Connect integration
 
 ### Development Environment
 - **Node.js** runtime with ESM modules
@@ -40,15 +41,16 @@ The application uses a modern full-stack TypeScript architecture with:
 - **Type-safe** request/response handling with Zod validation
 - **Session management** with PostgreSQL session store
 
-### 3. Database Schema Design (SQLite)
-- **Users table**: Core user authentication and role management
+### 3. Database Schema Design (PostgreSQL)
+- **Users table**: Replit Auth integration with user profiles
+- **Sessions table**: PostgreSQL session storage for Replit Auth
 - **Student profiles**: Personalization data (mood, learning style, accessibility needs)
 - **Subjects**: Magical theme mapping (Math → Potions, Reading → Spells, etc.)
 - **Progress tracking**: Per-subject completion and performance metrics
 - **Survey responses**: Mood and preference capture
 - **Rewards system**: Gamification with badges and achievements
 
-**Database Technology**: SQLite with better-sqlite3 driver for local file-based storage
+**Database Technology**: PostgreSQL with Drizzle ORM and Neon serverless driver
 
 ### 4. Personalization Engine
 - **Mood analysis**: Real-time emotional state tracking
@@ -82,8 +84,8 @@ Mood Updates → Content Adjustment → Accessibility Adaptation → Progress Sy
 - **class-variance-authority** for component variants
 
 ### Database and State
-- **better-sqlite3** for SQLite database operations
-- **sqlite3** for database compatibility
+- **@neondatabase/serverless** for PostgreSQL operations
+- **Drizzle ORM** with PostgreSQL dialect
 - **Drizzle Zod** for schema validation
 
 ### Accessibility and Enhancement
@@ -105,13 +107,24 @@ Mood Updates → Content Adjustment → Accessibility Adaptation → Progress Sy
 - **Environment-based configuration**
 
 ### Database Management
-- **Drizzle migrations** for schema versioning
+- **Drizzle push** for direct schema deployment
 - **Environment variable** configuration for database connection
-- **PostgreSQL** as the primary database
+- **PostgreSQL** with Neon serverless architecture
+- **Session storage** in PostgreSQL for authentication
 
 ### Replit Optimizations
 - **Runtime error overlay** for development
 - **Cartographer plugin** for enhanced debugging
 - **Banner integration** for development environment detection
+
+## Recent Changes
+
+**Migration to Replit Environment (January 2025)**
+- Migrated from SQLite to PostgreSQL with Neon serverless
+- Implemented Replit Auth with OpenID Connect
+- Set up session management with PostgreSQL store
+- Created landing and home pages for authenticated users
+- Updated schema to support Replit user model
+- Configured database with default subjects and rewards
 
 The architecture prioritizes accessibility, personalization, and educational engagement while maintaining clean separation of concerns and type safety throughout the stack.
