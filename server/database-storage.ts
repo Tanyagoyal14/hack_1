@@ -20,7 +20,7 @@ import {
   type InsertStudentReward
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { IStorage } from "./storage";
 
 export class DatabaseStorage implements IStorage {
@@ -92,8 +92,7 @@ export class DatabaseStorage implements IStorage {
     const [progress] = await db
       .select()
       .from(studentProgress)
-      .where(eq(studentProgress.studentId, studentId))
-      .where(eq(studentProgress.subjectId, subjectId));
+      .where(and(eq(studentProgress.studentId, studentId), eq(studentProgress.subjectId, subjectId)));
     return progress;
   }
 
