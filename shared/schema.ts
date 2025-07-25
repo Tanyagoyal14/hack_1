@@ -1,95 +1,91 @@
 import {
-  pgTable,
+  sqliteTable,
   text,
-  varchar,
-  timestamp,
-  jsonb,
-  index,
   integer,
-  serial,
-} from "drizzle-orm/pg-core";
+  index,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Session storage table for Replit Auth
-export const sessions = pgTable(
+export const sessions = sqliteTable(
   "sessions",
   {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
+    sid: text("sid").primaryKey(),
+    sess: text("sess").notNull(),
+    expire: integer("expire", { mode: 'timestamp' }).notNull(),
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
 // User storage table for Replit Auth
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role").notNull().default("student"), // student, teacher, parent
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().notNull(),
+  email: text("email").unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
+  role: text("role").notNull().default("student"), // student, teacher, parent
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
-export const studentProfiles = pgTable("student_profiles", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  currentMood: varchar("current_mood"), // happy, calm, excited, tired, frustrated
-  learningStyle: varchar("learning_style"), // visual, auditory, kinesthetic
-  interests: jsonb("interests").notNull().default('[]'), // array of interests
-  accessibilityNeeds: jsonb("accessibility_needs").notNull().default('{}'), // TTS, font size, etc.
+export const studentProfiles = sqliteTable("student_profiles", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").references(() => users.id).notNull(),
+  currentMood: text("current_mood"), // happy, calm, excited, tired, frustrated
+  learningStyle: text("learning_style"), // visual, auditory, kinesthetic
+  interests: text("interests").notNull().default('[]'), // JSON string array of interests
+  accessibilityNeeds: text("accessibility_needs").notNull().default('{}'), // JSON string for TTS, font size, etc.
   level: integer("level").default(1),
   totalXP: integer("total_xp").default(0),
   availableSpins: integer("available_spins").default(3),
   streak: integer("streak").default(0),
-  badges: jsonb("badges").notNull().default('[]'),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  badges: text("badges").notNull().default('[]'), // JSON string array
+  updatedAt: integer("updated_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
-export const subjects = pgTable("subjects", {
-  id: serial("id").primaryKey(),
-  name: varchar("name").notNull(), // Math, Reading, Science, Social Studies
-  magicalName: varchar("magical_name").notNull(), // Potions, Spells, Nature Magic, World Adventures
-  icon: varchar("icon").notNull(),
-  color: varchar("color").notNull(),
+export const subjects = sqliteTable("subjects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(), // Math, Reading, Science, Social Studies
+  magicalName: text("magical_name").notNull(), // Potions, Spells, Nature Magic, World Adventures
+  icon: text("icon").notNull(),
+  color: text("color").notNull(),
   description: text("description").notNull(),
 });
 
-export const studentProgress = pgTable("student_progress", {
-  id: serial("id").primaryKey(),
+export const studentProgress = sqliteTable("student_progress", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   studentId: integer("student_id").references(() => studentProfiles.id).notNull(),
   subjectId: integer("subject_id").references(() => subjects.id).notNull(),
   progress: integer("progress").default(0), // percentage 0-100
   completedTasks: integer("completed_tasks").default(0),
   totalTasks: integer("total_tasks").default(0),
-  lastAccessed: timestamp("last_accessed").defaultNow(),
+  lastAccessed: integer("last_accessed", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
-export const surveyResponses = pgTable("survey_responses", {
-  id: serial("id").primaryKey(),
+export const surveyResponses = sqliteTable("survey_responses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   studentId: integer("student_id").references(() => studentProfiles.id).notNull(),
-  responses: jsonb("responses").notNull(), // store all survey answers
-  analyzedData: jsonb("analyzed_data"), // AI analysis results
-  createdAt: timestamp("created_at").defaultNow(),
+  responses: text("responses").notNull(), // JSON string for all survey answers
+  analyzedData: text("analyzed_data"), // JSON string for AI analysis results
+  createdAt: integer("created_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
-export const rewards = pgTable("rewards", {
-  id: serial("id").primaryKey(),
-  name: varchar("name").notNull(),
-  type: varchar("type").notNull(), // xp, badge, mini_game, unlock
+export const rewards = sqliteTable("rewards", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // xp, badge, mini_game, unlock
   value: integer("value"), // XP amount if applicable
-  icon: varchar("icon").notNull(),
+  icon: text("icon").notNull(),
   description: text("description"),
 });
 
-export const studentRewards = pgTable("student_rewards", {
-  id: serial("id").primaryKey(),
+export const studentRewards = sqliteTable("student_rewards", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   studentId: integer("student_id").references(() => studentProfiles.id).notNull(),
   rewardId: integer("reward_id").references(() => rewards.id).notNull(),
-  earnedAt: timestamp("earned_at").defaultNow(),
+  earnedAt: integer("earned_at", { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 });
 
 // Insert Schemas

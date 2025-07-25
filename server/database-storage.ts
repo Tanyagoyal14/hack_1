@@ -59,7 +59,13 @@ export class DatabaseStorage implements IStorage {
   async createStudentProfile(insertProfile: InsertStudentProfile): Promise<StudentProfile> {
     const [profile] = await db
       .insert(studentProfiles)
-      .values(insertProfile)
+      .values({
+        ...insertProfile,
+        // Ensure JSON fields are stringified for SQLite
+        interests: typeof insertProfile.interests === 'string' ? insertProfile.interests : JSON.stringify(insertProfile.interests || []),
+        accessibilityNeeds: typeof insertProfile.accessibilityNeeds === 'string' ? insertProfile.accessibilityNeeds : JSON.stringify(insertProfile.accessibilityNeeds || {}),
+        badges: typeof insertProfile.badges === 'string' ? insertProfile.badges : JSON.stringify(insertProfile.badges || []),
+      })
       .returning();
     return profile;
   }
@@ -67,7 +73,14 @@ export class DatabaseStorage implements IStorage {
   async updateStudentProfile(id: number, updates: Partial<StudentProfile>): Promise<StudentProfile | undefined> {
     const [profile] = await db
       .update(studentProfiles)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ 
+        ...updates, 
+        updatedAt: new Date(),
+        // Ensure JSON fields are stringified for SQLite
+        ...(updates.interests && { interests: typeof updates.interests === 'string' ? updates.interests : JSON.stringify(updates.interests) }),
+        ...(updates.accessibilityNeeds && { accessibilityNeeds: typeof updates.accessibilityNeeds === 'string' ? updates.accessibilityNeeds : JSON.stringify(updates.accessibilityNeeds) }),
+        ...(updates.badges && { badges: typeof updates.badges === 'string' ? updates.badges : JSON.stringify(updates.badges) }),
+      })
       .where(eq(studentProfiles.id, id))
       .returning();
     return profile;
@@ -122,7 +135,11 @@ export class DatabaseStorage implements IStorage {
   async createSurveyResponse(insertResponse: InsertSurveyResponse): Promise<SurveyResponse> {
     const [response] = await db
       .insert(surveyResponses)
-      .values(insertResponse)
+      .values({
+        ...insertResponse,
+        responses: typeof insertResponse.responses === 'string' ? insertResponse.responses : JSON.stringify(insertResponse.responses),
+        analyzedData: insertResponse.analyzedData ? (typeof insertResponse.analyzedData === 'string' ? insertResponse.analyzedData : JSON.stringify(insertResponse.analyzedData)) : undefined,
+      })
       .returning();
     return response;
   }
