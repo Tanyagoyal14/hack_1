@@ -200,7 +200,11 @@ export default function Dashboard() {
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Tasks: {subject.completedTasks || 0}/{subject.totalTasks || 10}</span>
                       </div>
-                      <Button className="w-full mt-4" size="sm">
+                      <Button 
+                        className="w-full mt-4" 
+                        size="sm"
+                        onClick={() => window.location.href = `/game/${studentId}/${subject.id}`}
+                      >
                         Continue Learning
                       </Button>
                     </div>
@@ -227,6 +231,7 @@ export default function Dashboard() {
               <Button 
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 size="lg"
+                onClick={() => window.location.href = `/spin/${studentId}`}
               >
                 <Sparkles className="mr-2 h-4 w-4" />
                 Spin for Rewards!

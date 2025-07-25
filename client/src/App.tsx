@@ -8,6 +8,8 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Survey from "@/pages/Survey";
 import Dashboard from "@/pages/Dashboard";
+import SpinWheel from "@/pages/SpinWheel";
+import SubjectGame from "@/pages/SubjectGame";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -21,6 +23,8 @@ function Router() {
           <Route path="/" component={Survey} />
           <Route path="/survey" component={Survey} />
           <Route path="/dashboard/:studentId" component={Dashboard} />
+          <Route path="/spin/:studentId" component={SpinWheel} />
+          <Route path="/game/:studentId/:subjectId" component={SubjectGame} />
         </>
       )}
       <Route component={NotFound} />
