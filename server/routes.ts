@@ -157,8 +157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { studentId } = req.body;
       
-      // Check if student has available spins
-      const profile = await storage.getStudentProfile(studentId);
+      // Check if student has available spins - studentId here is the profile ID
+      const profile = await storage.getStudentProfileById(studentId);
       if (!profile || (profile.availableSpins || 0) <= 0) {
         return res.status(400).json({ message: "No spins available" });
       }

@@ -38,7 +38,7 @@ export default function SpinWheel() {
       const response = await fetch("/api/students/rewards/spin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: parseInt(studentId!) }),
+        body: JSON.stringify({ studentId: (dashboardData as any)?.profile?.id }),
       });
       
       if (!response.ok) {
